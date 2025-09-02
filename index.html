@@ -7,12 +7,12 @@
     <meta name="description" content="Optimize sheet cutting for woodworking with advanced nesting algorithms to minimize waste.">
     <meta name="keywords" content="cutting optimization, sheet nesting, woodworking tools, manufacturing software">
     <meta name="robots" content="index,follow">
-    <title>Cutting Optimization Studio - Efficient Sheet Nesting Tool</title>
+    <title>CutOpt Studio</title>
 <link rel="icon" type="image/png" href="image/favicon-96x96.png" sizes="96x96" />
 <link rel="icon" type="image/svg+xml" href="image/favicon.svg" />
 <link rel="shortcut icon" href="image/favicon.ico" />
 <link rel="apple-touch-icon" sizes="180x180" href="image/apple-touch-icon.png" />
-<meta name="apple-mobile-web-app-title" content="Cutting optimization Studio " />
+<meta name="apple-mobile-web-app-title" content="CutOpt Studio" />
 <link rel="manifest" href="image/site.webmanifest" />
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" as="style">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -23,7 +23,7 @@
     <div class="container" role="main" aria-label="Main application container">
         <header>
             <div class="header-content">
-                <h1><i class="fas fa-cut logo" aria-hidden="true"></i> Cutting Optimization Studio</h1>
+                <h1><i class="fas fa-cut logo" aria-hidden="true"></i> CutOpt Studio</h1>
                 <div class="app-controls">
                     <button type="button" class="btn btn-outline" id="help-btn"><i class="fas fa-question-circle"></i> Help</button>
                     <button type="button" class="btn btn-primary" id="export-pdf"><i class="fas fa-file-pdf"></i> Export PDF</button>
@@ -86,9 +86,9 @@
                         <label>Sheet Dimensions (cm)</label>
                         <div class="dimension-inputs">
                             <label for="sheet-length">Length (cm)</label>
-                            <input type="number" id="sheet-length" placeholder="Length" value="244" min="1" required aria-describedby="sheet-length-error">
+                            <input type="number" id="sheet-length" placeholder="Length" value="122" min="1" required aria-describedby="sheet-length-error">
                             <label for="sheet-width">Width (cm)</label>
-                            <input type="number" id="sheet-width" placeholder="Width" value="122" min="1" required aria-describedby="sheet-width-error">
+                            <input type="number" id="sheet-width" placeholder="Width" value="244" min="1" required aria-describedby="sheet-width-error">
                         </div>
                         <div class="error-message" id="sheet-length-error" role="alert" aria-live="polite"></div>
                         <div class="error-message" id="sheet-width-error" role="alert" aria-live="polite"></div>
@@ -228,8 +228,8 @@
                         <div class="form-group">
                             <label for="remnant-usage">Remnant Usage</label>
                             <select id="remnant-usage">
-                                <option value="none">Don't use remnants</option>
-                                <option value="similar" selected>Use similar remnants only</option>
+                                <option value="none" selected>Don't use remnants</option>
+                                <option value="similar">Use similar remnants only</option>
                                 <option value="any">Use any available remnants</option>
                             </select>
                         </div>
@@ -358,7 +358,7 @@
         </div>
         
         <footer role="contentinfo">
-            <p>Cutting Optimization Studio &copy; 2025 | Advanced cutting layout optimization for woodworking and manufacturing</p>
+            <p>CutOpt Studio &copy; 2025 | Advanced cutting layout optimization for woodworking and manufacturing</p>
         </footer>
     </div>
 
@@ -389,4 +389,3 @@
 
 </body>
 </html>
-
