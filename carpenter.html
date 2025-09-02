@@ -1,0 +1,391 @@
+<!-- carpenter.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Optimize sheet cutting for woodworking with advanced nesting algorithms to minimize waste.">
+    <meta name="keywords" content="cutting optimization, sheet nesting, woodworking tools, manufacturing software">
+    <meta name="robots" content="index,follow">
+    <title>Cutting Optimization Studio - Efficient Sheet Nesting Tool</title>
+<link rel="icon" type="image/png" href="image/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="image/favicon.svg" />
+<link rel="shortcut icon" href="image/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="image/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="Cutting Optimization Studio" />
+<link rel="manifest" href="image/site.webmanifest">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" as="style">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body dir="ltr">
+    <div class="container" role="main" aria-label="Main application container">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-cut logo" aria-hidden="true"></i> Cutting Optimization Studio</h1>
+                <div class="app-controls">
+                    <button type="button" class="btn btn-outline" id="help-btn"><i class="fas fa-question-circle"></i> Help</button>
+                    <button type="button" class="btn btn-primary" id="export-pdf"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="steps-container">
+            <div class="steps" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" aria-label="Optimization steps">
+                <div class="step active" data-step="1">
+                    <div class="step-icon" aria-label="Material Stock icon"><i class="fas fa-box"></i></div>
+                    <div class="step-label">Material Stock</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-icon" aria-label="Parts Definition icon"><i class="fas fa-puzzle-piece"></i></div>
+                    <div class="step-label">Parts Definition</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-icon" aria-label="Preferences icon"><i class="fas fa-sliders-h"></i></div>
+                    <div class="step-label">Preferences</div>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-icon" aria-label="Optimization icon"><i class="fas fa-magic"></i></div>
+                    <div class="step-label">Optimization</div>
+                </div>
+                <div class="step" data-step="5">
+                    <div class="step-icon" aria-label="Results icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="step-label">Results</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="input-panel">
+                <!-- Step 1: Material Stock -->
+                <div class="step-content active" data-step="1">
+                    <h2><i class="fas fa-box section-icon"></i> Define Your Material Stock</h2>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="sheet-type">Sheet Type</label>
+                            <select id="sheet-type">
+                                <option value="plywood">Plywood</option>
+                                <option value="mdf">MDF</option>
+                                <option value="glass">Glass</option>
+                                <option value="acrylic">Acrylic</option>
+                                <option value="metal">Metal Sheet</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="thickness">Thickness (cm)</label>
+                            <input type="number" id="thickness" value="1.8" step="0.1" min="0.1" required aria-describedby="thickness-error">
+                            <div class="error-message" id="thickness-error" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sheet Dimensions (cm)</label>
+                        <div class="dimension-inputs">
+                            <label for="sheet-length">Length (cm)</label>
+                            <input type="number" id="sheet-length" placeholder="Length" value="122" min="1" required aria-describedby="sheet-length-error">
+                            <label for="sheet-width">Width (cm)</label>
+                            <input type="number" id="sheet-width" placeholder="Width" value="244" min="1" required aria-describedby="sheet-width-error">
+                        </div>
+                        <div class="error-message" id="sheet-length-error" role="alert" aria-live="polite"></div>
+                        <div class="error-message" id="sheet-width-error" role="alert" aria-live="polite"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sheet-quantity">Quantity Available</label>
+                        <input type="number" id="sheet-quantity" value="5" min="1" required aria-describedby="sheet-quantity-error">
+                        <div class="error-message" id="sheet-quantity-error" role="alert" aria-live="polite"></div>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="kerf">Saw Kerf (cm)</label>
+                            <input type="number" id="kerf" value="0.3" step="0.1" min="0" required aria-describedby="kerf-error">
+                            <div class="error-message" id="kerf-error" role="alert" aria-live="polite"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edge-offset">Edge Offset (cm)</label>
+                            <input type="number" id="edge-offset" value="0.5" step="0.1" min="0" required aria-describedby="edge-offset-error">
+                            <div class="error-message" id="edge-offset-error" role="alert" aria-live="polite"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="has-grain" checked>
+                        <label for="has-grain">Material has grain direction</label>
+                    </div>
+                    
+                    <div class="navigation">
+                        <div></div> <!-- Empty div for spacing -->
+                        <button class="btn btn-primary next-step">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Parts Definition -->
+                <div class="step-content" data-step="2">
+                    <h2><i class="fas fa-puzzle-piece section-icon"></i> Enter the Parts You Need</h2>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Add New Part</div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="part-name">Part Label (Optional)</label>
+                                <input type="text" id="part-name" placeholder="e.g., Shelf Side">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="part-quantity">Quantity</label>
+                                <input type="number" id="part-quantity" value="1" min="1" required aria-describedby="part-quantity-error">
+                                <div class="error-message" id="part-quantity-error" role="alert" aria-live="polite"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="part-length">Length (cm)</label>
+                                <input type="number" id="part-length" value="60" min="1" required aria-describedby="part-length-error">
+                                <div class="error-message" id="part-length-error" role="alert" aria-live="polite"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="part-width">Width (cm)</label>
+                                <input type="number" id="part-width" value="40" min="1" required aria-describedby="part-width-error">
+                                <div class="error-message" id="part-width-error" role="alert" aria-live="polite"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="rotation-allowed" checked>
+                                <label for="rotation-allowed">Rotation Allowed</label>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="grain-direction">
+                                <label for="grain-direction">Fixed Grain Direction</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Edge Banding Required</label>
+                            <div class="edge-banding-controls">
+                                <div class="edge-checkbox">
+                                    <input type="checkbox" id="edge-top">
+                                    <label for="edge-top">Top</label>
+                                </div>
+                                <div class="edge-checkbox">
+                                    <input type="checkbox" id="edge-bottom">
+                                    <label for="edge-bottom">Bottom</label>
+                                </div>
+                                <div class="edge-checkbox">
+                                    <input type="checkbox" id="edge-left">
+                                    <label for="edge-left">Left</label>
+                                </div>
+                                <div class="edge-checkbox">
+                                    <input type="checkbox" id="edge-right">
+                                    <label for="edge-right">Right</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-success" id="add-part-btn" style="width: 100%"><i class="fas fa-plus"></i> Add Part</button>
+                    </div>
+                    
+                    <h3>Parts List</h3>
+                    
+                    <div class="parts-list" id="parts-list-container">
+                        <!-- Parts will be dynamically added here -->
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-outline prev-step"><i class="fas fa-arrow-left"></i> Previous</button>
+                        <button class="btn btn-primary next-step">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Preferences -->
+                <div class="step-content" data-step="3">
+                    <h2><i class="fas fa-sliders-h section-icon"></i> Set Cutting Preferences</h2>
+                    
+                    <fieldset>
+                        <legend>Cutting Preferences</legend>
+                        <div class="form-group">
+                            <label for="cutting-method">Cutting Method</label>
+                            <select id="cutting-method">
+                                <option value="length">First cut along length</option>
+                                <option value="width">First cut along width</option>
+                                <option value="mixed" selected>Mixed (Best Fit)</option>
+                            </select>
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="remnant-usage">Remnant Usage</label>
+                            <select id="remnant-usage">
+                                <option value="none">Don't use remnants</option>
+                                <option value="similar" selected>Use similar remnants only</option>
+                                <option value="any">Use any available remnants</option>
+                            </select>
+                        </div>
+                    
+                        <div class="form-group">
+                            <label for="units">Measurement Units</label>
+                            <select id="units">
+                                <option value="metric" selected>Metric (cm, m)</option>
+                                <option value="imperial">Imperial (inches, feet)</option>
+                            </select>
+                        </div>
+                    
+                        <fieldset>
+                            <legend>Grain and Waste Preferences</legend>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="grain-direction-pref" checked>
+                                <label for="grain-direction-pref">Respect grain direction when specified</label>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="minimize-waste" checked>
+                                <label for="minimize-waste">Prioritize waste minimization over cutting time</label>
+                            </div>
+                        </fieldset>
+                    </fieldset>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-outline prev-step"><i class="fas fa-arrow-left"></i> Previous</button>
+                        <button class="btn btn-primary next-step">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Optimization -->
+                <div class="step-content" data-step="4">
+                    <h2><i class="fas fa-magic section-icon"></i> Run Optimization</h2>
+                    
+                    <p>Review your settings and run the optimization algorithm to generate the most efficient cutting layout.</p>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Optimization Settings Summary</div>
+                        </div>
+                        
+                        <div id="optimization-summary">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-outline prev-step"><i class="fas fa-arrow-left"></i> Previous</button>
+                        <button class="btn btn-success run-optimization"><i class="fas fa-bolt"></i> Run Optimization</button>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Results -->
+                <div class="step-content" data-step="5">
+                    <h2><i class="fas fa-chart-pie section-icon"></i> Optimization Results</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Sheets Used</div>
+                            <div class="stat-value" id="stat-sheets">0/0</div>
+                            <div class="waste-indicator">
+                                <div class="waste-level" id="waste-sheets" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-label">Material Usage</div>
+                            <div class="stat-value" id="stat-usage">0%</div>
+                            <div class="waste-indicator">
+                                <div class="waste-level" id="waste-usage" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-label">Total Cuts</div>
+                            <div class="stat-value" id="stat-cuts">0</div>
+                            <div class="waste-indicator">
+                                <div class="waste-level" id="waste-cuts" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-label">Edge Banding</div>
+                            <div class="stat-value" id="stat-edging">0 cm</div>
+                            <div class="waste-indicator">
+                                <div class="waste-level" id="waste-edging" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-outline prev-step"><i class="fas fa-arrow-left"></i> Previous</button>
+                        <button class="btn btn-success" id="rerun-optimization"><i class="fas fa-redo"></i> Re-run with Different Settings</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="visualization-area">
+                <div class="tabs">
+                    <div class="tab active" data-tab="layout" tabindex="0">Cutting Layout</div>
+                    <div class="tab" data-tab="plan" tabindex="0">Cutting Plan</div>
+                    <div class="tab" data-tab="remnants" tabindex="0">Remnant Management</div>
+                    <div class="tab" data-tab="edging" tabindex="0">Edge Banding</div>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="cutting-canvas" tabindex="0" role="img" aria-label="Cutting layout visualization"></canvas>
+                    <div class="sheet-navigation">
+                        <button id="prev-sheet" class="btn btn-outline" aria-label="Previous sheet"><i class="fas fa-arrow-left"></i></button>
+                        <span id="sheet-indicator">1 of 1</span>
+                        <button id="next-sheet" class="btn btn-outline" aria-label="Next sheet"><i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <div class="cutting-plan" id="cutting-plan-container" style="display: none;">
+                    <!-- Cutting plan will be displayed here -->
+                </div>
+                
+                <div class="results-panel" id="results-summary">
+                    <h3>Cutting Summary</h3>
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <footer role="contentinfo">
+            <p>Cutting Optimization Studio &copy; 2025 | Advanced cutting layout optimization for woodworking and manufacturing</p>
+        </footer>
+    </div>
+
+    <!-- Notification element -->
+    <div id="notification" role="alert" aria-live="assertive"></div>
+
+    <!-- Modal for confirmations -->
+    <div id="confirm-modal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <p id="confirm-message"></p>
+            <div class="modal-buttons">
+                <button id="confirm-yes" class="btn btn-primary">Yes</button>
+                <button id="confirm-no" class="btn btn-outline">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <h2>Help Guide</h2>
+            <p>This is a cutting optimization tool. Follow the steps to define materials, add parts, set preferences, run optimization, and view results.</p>
+            <button id="close-help" class="btn btn-outline">Close</button>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+
+</body>
+</html>
