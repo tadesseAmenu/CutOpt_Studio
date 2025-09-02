@@ -1,4 +1,3 @@
-
 // script.js
 window.addEventListener('load', function() {
     const canvas = document.getElementById('cutting-canvas');
@@ -1050,9 +1049,11 @@ window.addEventListener('load', function() {
     function generateMockResults() {
         if (partsList.length === 0) {
             return {
-                minEstimatedSheets: 0,
+                theoreticalMinSheets: 0,
+                requiredSheets: 0,
                 availableSheets: 0,
                 sheetsUsed: 0,
+                unplaceableParts: 0,
                 materialUsage: 0,
                 totalCuts: 0,
                 edgeBandingTotal: 0,
@@ -1073,8 +1074,73 @@ window.addEventListener('load', function() {
         
         const usedArea = partsList.reduce((sum, part) => sum + (part.width * part.length), 0);
         const sheetArea = (currentMaterial.width - 2 * offset) * (currentMaterial.length - 2 * offset);
-        const minEstimatedSheets = Math.ceil(usedArea / sheetArea);
+        const theoreticalMinSheets = Math.ceil(usedArea / sheetArea);
         
+        // Estimation for required sheets (unlimited sheets)
+        let tempParts = partsList.map(p => ({...p}));
+        let tempLayouts = [];
+        let tempSheetIndex = 1;
+        const maxSheets = 10000; // Safety limit
+        while (tempParts.length > 0 && tempSheetIndex <= maxSheets) {
+            const layout = placeParts(`Sheet ${tempSheetIndex}`, tempParts, currentMaterial.width, currentMaterial.length, offset, kerf, respectGrain);
+            if (layout.parts.length > 0) {
+                tempLayouts.push(layout);
+                tempSheetIndex++;
+            } else {
+                break;
+            }
+        }
+
+        // Remnants for estimation
+        let tempRemnants = [];
+        tempLayouts.forEach((layout) => {
+            const remnantHeight = layout.sheetHeight - layout.maxY - kerf;
+            if (remnantHeight > 0) {
+                tempRemnants.push({
+                    width: layout.sheetWidth - 2 * offset,
+                    length: remnantHeight,
+                    area: (layout.sheetWidth - 2 * offset) * remnantHeight,
+                    location: layout.sheet + ' bottom'
+                });
+            }
+            const remnantWidth = layout.sheetWidth - layout.maxX - kerf;
+            if (remnantWidth > 0) {
+                tempRemnants.push({
+                    width: remnantWidth,
+                    length: layout.maxY - offset,
+                    area: remnantWidth * (layout.maxY - offset),
+                    location: layout.sheet + ' right'
+                });
+            }
+        });
+
+        if (remnantUsage !== 'none' && tempParts.length > 0) {
+            tempRemnants.sort((a, b) => b.area - a.area);
+            for (let rem of tempRemnants) {
+                if (rem.area < 100) continue;
+                let candidates = [...tempParts];
+                if (remnantUsage === 'similar') {
+                    candidates = candidates.filter(p => {
+                        const pArea = p.width * p.length;
+                        const pMax = Math.max(p.width, p.length);
+                        const rMax = Math.max(rem.width, rem.length);
+                        return pArea <= rem.area * 0.8 && pMax <= rMax;
+                    });
+                }
+                if (candidates.length > 0) {
+                    const remOffset = 0;
+                    const remLayout = placeParts(rem.location, candidates, rem.width, rem.length, remOffset, kerf, respectGrain);
+                    if (remLayout.parts.length > 0) {
+                        tempLayouts.push(remLayout);
+                    }
+                }
+            }
+        }
+
+        const requiredSheets = tempLayouts.filter(l => !l.isRemnant).length;
+        const unplaceableParts = tempParts.length;
+
+        // Actual placement with limited sheets
         const layouts = [];
         let remainingParts = [...partsList];
         let sheetIndex = 1;
@@ -1083,17 +1149,13 @@ window.addEventListener('load', function() {
             const layout = placeParts(`Sheet ${sheetIndex}`, remainingParts, currentMaterial.width, currentMaterial.length, offset, kerf, respectGrain);
             if (layout.parts.length > 0) {
                 layouts.push(layout);
+            } else {
+                break;
             }
             sheetIndex++;
         }
         
-        const sheetsUsed = layouts.length;
-        
-        if (remainingParts.length > 0) {
-            showNotification(`Some parts (${remainingParts.length}) could not be placed on available sheets.`, 'warning');
-        }
-        
-        // Calculate remnants
+        // Calculate remnants for actual
         let remnants = [];
         layouts.forEach((layout, index) => {
             const remnantHeight = layout.sheetHeight - layout.maxY - kerf;
@@ -1138,6 +1200,12 @@ window.addEventListener('load', function() {
                     }
                 }
             }
+        }
+        
+        const sheetsUsed = layouts.filter(layout => !layout.isRemnant).length;
+        
+        if (remainingParts.length > 0) {
+            showNotification(`Some parts (${remainingParts.length}) could not be placed on available sheets.`, 'warning');
         }
         
         const totalAvailableArea = sheetArea * sheetsUsed;
@@ -1209,9 +1277,11 @@ window.addEventListener('load', function() {
         const maxEdging = edgeBandingTotal * 1.5; // Arbitrary for scale
         
         return {
-            minEstimatedSheets,
+            theoreticalMinSheets,
+            requiredSheets,
             availableSheets,
             sheetsUsed,
+            unplaceableParts,
             materialUsage: usagePercentage,
             totalCuts,
             edgeBandingTotal,
@@ -1258,7 +1328,7 @@ window.addEventListener('load', function() {
         h3.textContent = 'Cutting Summary';
         summary.appendChild(h3);
         const p1 = document.createElement('p');
-        p1.textContent = `Total sheets used: ${optimizationResults.sheetsUsed} out of ${optimizationResults.availableSheets} available (estimated minimum based on area: ${optimizationResults.minEstimatedSheets})`;
+        p1.textContent = `Total sheets required: ${optimizationResults.requiredSheets} (theoretical minimum: ${optimizationResults.theoreticalMinSheets}) out of ${optimizationResults.availableSheets} available, used: ${optimizationResults.sheetsUsed}`;
         summary.appendChild(p1);
         const p2 = document.createElement('p');
         p2.textContent = `Material usage: ${optimizationResults.materialUsage}% (Waste: ${optimizationResults.waste}%)`;
@@ -1272,6 +1342,11 @@ window.addEventListener('load', function() {
         const p5 = document.createElement('p');
         p5.textContent = `Remnants: ${optimizationResults.remnants.length}`;
         summary.appendChild(p5);
+        if (optimizationResults.unplaceableParts > 0) {
+            const p6 = document.createElement('p');
+            p6.textContent = `Note: ${optimizationResults.unplaceableParts} parts could not be placed as they do not fit on the sheets.`;
+            summary.appendChild(p6);
+        }
 
         resultsSummary.innerHTML = '';
         resultsSummary.appendChild(summary);
@@ -1315,7 +1390,7 @@ window.addEventListener('load', function() {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(12);
         checkPageBreak(50); // Approximate height for summary block
-        doc.text(`Sheets Used: ${optimizationResults.sheetsUsed}/${optimizationResults.availableSheets}`, marginLeft, yPos);
+        doc.text(`Sheets Required: ${optimizationResults.requiredSheets} (theoretical minimum: ${optimizationResults.theoreticalMinSheets}) / ${optimizationResults.availableSheets}`, marginLeft, yPos);
         yPos += 7;
         doc.text(`Material Usage: ${optimizationResults.materialUsage}% (Waste: ${optimizationResults.waste}%)`, marginLeft, yPos);
         yPos += 7;
